@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Razaan Mojo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --math: #FF6B6B;
+    --math-light: #FFE5E5;
+    --math-dark: #E55555;
+    --science: #4ECDC4;
+    --science-light: #E0FAF8;
+    --science-dark: #3AB8B0;
+    --spelling: #FFD93D;
+    --spelling-light: #FFF9D6;
+    --spelling-dark: #E6C200;
+    --purple: #A855F7;
+    --purple-light: #F3E8FF;
+    --bg: #F0F7FF;
+    --card: #FFFFFF;
+    --text: #2D3748;
+    --text-light: #718096;
+    --success: #48BB78;
+    --danger: #FC8181;
+    --shadow: 0 8px 32px rgba(0,0,0,0.12);
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── STARS BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 10% 20%, rgba(78,205,196,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(255,107,107,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(168,85,247,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 16px; }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    padding: 28px 20px 20px;
+    position: relative;
+  }
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    background: linear-gradient(135deg, #FF6B6B, #A855F7, #4ECDC4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+  .header .subtitle {
+    font-size: 1rem;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .stars-row { font-size: 1.5rem; margin-top: 4px; animation: sparkle 2s infinite; }
+  @keyframes sparkle {
+    0%,100% { opacity: 1; } 50% { opacity: 0.6; }
+  }
+
+  /* ── REWARD BAR ── */
+  .reward-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: white;
+    border-radius: 50px;
+    padding: 10px 20px;
+    margin: 0 auto 20px;
+    max-width: 400px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .reward-bar:hover { transform: scale(1.02); }
+  .reward-bar .stars-count {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: #F6AD55;
+  }
+  .reward-bar .label { font-size: 0.85rem; color: var(--text-light); font-weight: 700; }
+  .reward-bar .rewards-icons { font-size: 1.3rem; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    border: none;
+    border-radius: var(--radius);
+    padding: 18px 10px;
+    cursor: pointer;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .tab-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .tab-btn:hover::after { opacity: 0.15; }
+  .tab-btn .icon { font-size: 2.4rem; }
+  .tab-btn.math { background: linear-gradient(135deg, #FF6B6B, #FF8E53); color: white; }
+  .tab-btn.science { background: linear-gradient(135deg, #4ECDC4, #45B7D1); color: white; }
+  .tab-btn.spelling { background: linear-gradient(135deg, #FFD93D, #FF6B9D); color: white; }
+  .tab-btn.active { transform: translateY(-4px) scale(1.04); box-shadow: 0 12px 32px rgba(0,0,0,0.2); }
+  .tab-btn:not(.active) { opacity: 0.82; }
+
+  /* ── PANELS ── */
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title.math { color: var(--math); }
+  .section-title.science { color: var(--science-dark); }
+  .section-title.spelling { color: #E6A000; }
+
+  /* ── TOPIC GRID ── */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .topic-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .topic-card:hover { transform: translateY(-4px) scale(1.03); }
+  .topic-card.math { border-color: var(--math-light); }
+  .topic-card.math:hover { border-color: var(--math); background: var(--math-light); }
+  .topic-card.science { border-color: var(--science-light); }
+  .topic-card.science:hover { border-color: var(--science); background: var(--science-light); }
+  .topic-card .topic-icon { font-size: 1.8rem; margin-bottom: 6px; }
+
+  /* ── QUIZ AREA ── */
+  .quiz-area {
+    background: white;
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    display: none;
+  }
+  .quiz-area.active { display: block; animation: fadeIn 0.3s ease; }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .quiz-topic {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+  }
+  .quiz-progress {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-light);
+  }
+  .progress-bar {
+    height: 10px;
+    background: #E2E8F0;
+    border-radius: 50px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 50px;
+    transition: width 0.4s ease;
+  }
+  .progress-fill.math { background: linear-gradient(90deg, var(--math), #FF8E53); }
+  .progress-fill.science { background: linear-gradient(90deg, var(--science), #45B7D1); }
+  .progress-fill.spelling { background: linear-gradient(90deg, var(--spelling), #FF6B9D); }
+
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .choice-btn {
+    border: 3px solid #E2E8F0;
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: left;
+    transition: all 0.2s;
+    line-height: 1.3;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: #A855F7; background: var(--purple-light); transform: scale(1.02); }
+  .choice-btn.correct { border-color: var(--success); background: #F0FFF4; color: #276749; }
+  .choice-btn.wrong { border-color: var(--danger); background: #FFF5F5; color: #9B2C2C; }
+  .choice-btn:disabled { cursor: default; }
+
+  .feedback-box {
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-weight: 800;
+    font-size: 1rem;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .feedback-box.show { display: flex; animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .feedback-box.correct { background: #F0FFF4; color: #276749; border: 2px solid #48BB78; }
+  .feedback-box.wrong { background: #FFF5F5; color: #9B2C2C; border: 2px solid #FC8181; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    border: none;
+    border-radius: 50px;
+    padding: 12px 28px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, #A855F7, #6366F1); color: white; box-shadow: 0 4px 14px rgba(168,85,247,0.4); }
+  .btn-math { background: linear-gradient(135deg, var(--math), #FF8E53); color: white; box-shadow: 0 4px 14px rgba(255,107,107,0.4); }
+  .btn-science { background: linear-gradient(135deg, var(--science), #45B7D1); color: white; box-shadow: 0 4px 14px rgba(78,205,196,0.4); }
+  .btn-spelling { background: linear-gradient(135deg, #FFD93D, #FF6B9D); color: white; box-shadow: 0 4px 14px rgba(255,107,107,0.4); }
+  .btn-back { background: #E2E8F0; color: var(--text); }
+  .btn-back:hover { background: #CBD5E0; }
+
+  /* ── RESULTS ── */
+  .results-area {
+    text-align: center;
+    padding: 30px 0;
+    display: none;
+  }
+  .results-area.active { display: block; animation: fadeIn 0.4s ease; }
+  .results-emoji { font-size: 4rem; margin-bottom: 10px; animation: bounce 0.6s ease; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+  .results-score {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3.5rem;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .results-msg { font-size: 1.1rem; font-weight: 700; color: var(--text-light); margin-bottom: 24px; }
+  .earned-stars {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: #F6AD55;
+    margin-bottom: 20px;
+  }
+
+  /* ── SPELLING MODE ── */
+  .spelling-ws-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .ws-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    cursor: pointer;
+    border: 3px solid var(--spelling-light);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    text-align: center;
+  }
+  .ws-card:hover { border-color: var(--spelling); background: var(--spelling-light); transform: translateY(-4px); }
+  .ws-card .ws-icon { font-size: 2.5rem; margin-bottom: 8px; }
+  .ws-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: #E6A000; }
+  .ws-card p { font-size: 0.82rem; color: var(--text-light); font-weight: 600; margin-top: 4px; }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .activity-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 14px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    text-align: center;
+    font-weight: 700;
+  }
+  .activity-card:hover { transform: translateY(-4px) scale(1.03); border-color: var(--spelling); background: var(--spelling-light); }
+  .activity-card .a-icon { font-size: 2rem; margin-bottom: 6px; }
+  .activity-card .a-name { font-size: 0.9rem; color: #E6A000; font-family: 'Fredoka One', cursive; }
+  .activity-card .a-desc { font-size: 0.75rem; color: var(--text-light); margin-top: 4px; }
+
+  /* ── SPELLING QUIZ ── */
+  .spell-input-wrap { margin-bottom: 20px; }
+  .spell-input {
+    width: 100%;
+    border: 3px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 16px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 2px;
+  }
+  .spell-input:focus { border-color: var(--spelling); }
+  .spell-input.correct { border-color: var(--success); background: #F0FFF4; }
+  .spell-input.wrong { border-color: var(--danger); background: #FFF5F5; }
+
+  .word-hint {
+    text-align: center;
+    font-size: 1.8rem;
+    font-family: 'Fredoka One', cursive;
+    letter-spacing: 8px;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #F7FAFC;
+    border-radius: 14px;
+  }
+
+  /* ── SCRAMBLE ── */
+  .scramble-letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .letter-tile {
+    background: linear-gradient(135deg, #FFD93D, #FF6B9D);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255,107,107,0.3);
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .letter-tile:hover { transform: scale(1.1) rotate(-5deg); }
+  .letter-tile.used { background: #E2E8F0; color: #A0AEC0; box-shadow: none; cursor: default; }
+
+  .answer-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+    min-height: 56px;
+    background: #F7FAFC;
+    border-radius: 14px;
+    padding: 10px;
+    border: 2px dashed #E2E8F0;
+  }
+  .answer-slot {
+    background: white;
+    border: 2px solid var(--spelling);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* ── MISSING LETTERS ── */
+  .missing-display {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    text-align: center;
+    letter-spacing: 6px;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .missing-display .blank {
+    display: inline-block;
+    border-bottom: 4px solid var(--spelling);
+    min-width: 32px;
+    color: transparent;
+    margin: 0 2px;
+  }
+
+  /* ── SENTENCE COMPLETION ── */
+  .sentence-box {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 2;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #F7FAFC;
+    border-radius: 14px;
+  }
+  .sentence-blank {
+    display: inline-block;
+    border-bottom: 3px solid var(--spelling);
+    min-width: 120px;
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    color: #E6A000;
+  }
+  .word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .word-chip {
+    background: linear-gradient(135deg, #FFD93D, #FFA500);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    padding: 8px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 8px rgba(255,165,0,0.3);
+  }
+  .word-chip:hover { transform: scale(1.08); }
+  .word-chip.selected { background: linear-gradient(135deg, var(--success), #38A169); }
+  .word-chip.used-chip { background: #E2E8F0; color: #A0AEC0; cursor: default; box-shadow: none; }
+
+  /* ── REWARD MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 36px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+  }
+  .modal h2 { font-family: 'Fredoka One', cursive; font-size: 2rem; margin-bottom: 8px; }
+  .modal p { color: var(--text-light); font-weight: 600; margin-bottom: 20px; }
+  .reward-items { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
+  .reward-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+    min-width: 90px;
+  }
+  .reward-item .r-icon { font-size: 2.8rem; }
+  .reward-item .r-name { font-weight: 800; font-size: 0.85rem; }
+  .reward-item .r-stars { font-size: 0.8rem; color: #F6AD55; font-weight: 700; }
+  .reward-item.earned { background: #F0FFF4; border-color: var(--success); }
+  .reward-item.locked { opacity: 0.4; filter: grayscale(0.6); }
+  .reward-item.next { background: var(--spelling-light); border-color: var(--spelling); }
+  .close-modal { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+
+  /* ── PARENT LOCK ── */
+  .parent-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #2D3748;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    z-index: 50;
+    transition: all 0.2s;
+  }
+  .parent-btn:hover { background: #1A202C; transform: scale(1.05); }
+
+  .parent-modal { max-width: 380px; }
+  .pin-display {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .pin-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid #E2E8F0;
+    transition: background 0.2s;
+  }
+  .pin-dot.filled { background: var(--purple); border-color: var(--purple); }
+  .pin-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .pin-key {
+    background: #F7FAFC;
+    border: 2px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 18px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pin-key:hover { background: var(--purple-light); border-color: var(--purple); }
+  .pin-key:active { transform: scale(0.93); }
+  .pin-error { color: var(--danger); font-weight: 700; font-size: 0.9rem; margin-top: 8px; }
+
+  .parent-dashboard h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; margin-bottom: 16px; color: var(--purple); }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: #F7FAFC; border-radius: 14px; padding: 16px; text-align: center; }
+  .stat-card .s-val { font-family: 'Fredoka One', cursive; font-size: 2rem; }
+  .stat-card .s-label { font-size: 0.8rem; font-weight: 700; color: var(--text-light); }
+
+  /* ── CELEBRATION ── */
+  .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── WORD DISPLAY (QUIZ HINT) ── */
+  .word-display-area {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .word-definition { font-size: 1rem; font-weight: 600; opacity: 0.9; margin-bottom: 8px; }
+  .word-syllables { font-size: 0.9rem; opacity: 0.7; font-style: italic; }
+
+  /* ── TEST MODE ── */
+  .test-word-num {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .test-word-display {
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--spelling-light);
+    border-radius: 16px;
+    border: 3px solid var(--spelling);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .choices { grid-template-columns: 1fr; }
+    .spelling-ws-grid { grid-template-columns: 1fr; }
+    .tab-btn { font-size: 0.95rem; padding: 14px 6px; }
+    .tab-btn .icon { font-size: 1.8rem; }
+    .stat-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── TOPIC BACK ROW ── */
+  .back-row { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+
+  /* ── WORD LIST PREVIEW ── */
+  .word-list-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .word-badge {
+    background: var(--spelling-light);
+    border: 2px solid var(--spelling);
+    color: #E6A000;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 4px 12px;
+    border-radius: 50px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="stars-row">⭐ 🌟 ✨ 🌟 ⭐</div>
+    <h1>Razaan Mojo</h1>
+    <div class="subtitle">Learn · Play · Grow! 🚀</div>
+  </div>
+
+  <!-- REWARD BAR -->
+  <div class="reward-bar" onclick="openRewards()">
+    <span>⭐</span>
+    <span class="stars-count" id="starsDisplay">0</span>
+    <span class="label">STARS EARNED</span>
+    <span class="rewards-icons">🍟🍦🍫</span>
+    <span style="font-size:1rem;color:var(--text-light);">›</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn math active" onclick="switchTab('math', this)">
+      <span class="icon">🔢</span>
+      Math
+    </button>
+    <button class="tab-btn science" onclick="switchTab('science', this)">
+      <span class="icon">🔬</span>
+      Science
+    </button>
+    <button class="tab-btn spelling" onclick="switchTab('spelling', this)">
+      <span class="icon">📝</span>
+      Spellings
+    </button>
+  </div>
+
+  <!-- ════ MATH PANEL ════ -->
+  <div id="panel-math" class="panel active">
+    <div id="math-topics-view">
+      <div class="section-title math">🔢 Math Topics</div>
+      <div class="topic-grid" id="mathTopicGrid"></div>
+    </div>
+    <div id="math-quiz-view" class="quiz-area">
+      <div class="back-row">
+        <button class="btn btn-back" onclick="showTopics('math')">← Back</button>
+        <div class="quiz-topic math" id="mathQuizTitle"></div>
+      </div>
+      <div class="quiz-progress" id="mathProgress"></div>
+      <div class="progress-bar"><div class="progress-fill math" id="mathProgressFill" style="width:0%"></div></div>
+      <div class="question-text" id="mathQuestion"></div>
+      <div class="choices" id="mathChoices"></div>
+      <div class="feedback-box" id="mathFeedback"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-math" id="mathNextBtn" onclick="nextQuestion('math')" style="display:none;">Next ›</button>
+        <button class="btn btn-primary" id="mathResultsBtn" onclick="showResults('math')" style="display:none;">See Results 🎉</button>
+      </div>
+      <div class="results-area" id="mathResults">
+        <div class="results-emoji" id="mathEmoji"></div>
+        <div class="results-score math" id="mathScore"></div>
+        <div class="results-msg" id="mathMsg"></div>
+        <div class="earned-stars" id="mathStars"></div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-math" onclick="retryQuiz('math')">🔄 Try Again</button>
+          <button class="btn btn-back" onclick="showTopics('math')">📚 Topics</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SCIENCE PANEL ════ -->
+  <div id="panel-science" class="panel">
+    <div id="science-topics-view">
+      <div class="section-title science">🔬 Science Topics</div>
+      <div class="topic-grid" id="scienceTopicGrid"></div>
+    </div>
+    <div id="science-quiz-view" class="quiz-area">
+      <div class="back-row">
+        <button class="btn btn-back" onclick="showTopics('science')">← Back</button>
+        <div class="quiz-topic science" id="scienceQuizTitle"></div>
+      </div>
+      <div class="quiz-progress" id="scienceProgress"></div>
+      <div class="progress-bar"><div class="progress-fill science" id="scienceProgressFill" style="width:0%"></div></div>
+      <div class="question-text" id="scienceQuestion"></div>
+      <div class="choices" id="scienceChoices"></div>
+      <div class="feedback-box" id="scienceFeedback"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-science" id="scienceNextBtn" onclick="nextQuestion('science')" style="display:none;">Next ›</button>
+        <button class="btn btn-primary" id="scienceResultsBtn" onclick="showResults('science')" style="display:none;">See Results 🎉</button>
+      </div>
+      <div class="results-area" id="scienceResults">
+        <div class="results-emoji" id="scienceEmoji"></div>
+        <div class="results-score science" id="scienceScore"></div>
+        <div class="results-msg" id="scienceMsg"></div>
+        <div class="earned-stars" id="scienceStars"></div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-science" onclick="retryQuiz('science')">🔄 Try Again</button>
+          <button class="btn btn-back" onclick="showTopics('science')">📚 Topics</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SPELLING PANEL ════ -->
+  <div id="panel-spelling" class="panel">
+
+    <!-- WORKSHEET SELECT -->
+    <div id="spell-ws-view">
+      <div class="section-title spelling">📝 Spelling Worksheets</div>
+      <div class="spelling-ws-grid">
+        <div class="ws-card" onclick="selectWorksheet(2)">
+          <div class="ws-icon">📖</div>
+          <h3>Worksheet 2</h3>
+          <p>20 words · Cinderella themed</p>
+          <div class="word-list-preview" style="margin-top:10px;" id="ws2preview"></div>
+        </div>
+        <div class="ws-card" onclick="selectWorksheet(3)">
+          <div class="ws-icon">📗</div>
+          <h3>Worksheet 3</h3>
+          <p>20 words · Fairy tale journey</p>
+          <div class="word-list-preview" style="margin-top:10px;" id="ws3preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY SELECT -->
+    <div id="spell-activity-view" style="display:none;">
+      <div class="back-row">
+        <button class="btn btn-back" onclick="backToWorksheets()">← Worksheets</button>
+        <div class="section-title spelling" style="margin:0;" id="activityWsTitle"></div>
+      </div>
+      <div class="activity-grid">
+        <div class="activity-card" onclick="startActivity('quiz')">
+          <div class="a-icon">✏️</div>
+          <div class="a-name">Spelling Quiz</div>
+          <div class="a-desc">Type each word correctly</div>
+        </div>
+        <div class="activity-card" onclick="startActivity('missing')">
+          <div class="a-icon">🔤</div>
+          <div class="a-name">Missing Letters</div>
+          <div class="a-desc">Fill in the blanks</div>
+        </div>
+        <div class="activity-card" onclick="startActivity('scramble')">
+          <div class="a-icon">🔀</div>
+          <div class="a-name">Word Scramble</div>
+          <div class="a-desc">Unscramble the letters</div>
+        </div>
+        <div class="activity-card" onclick="startActivity('sentence')">
+          <div class="a-icon">📜</div>
+          <div class="a-name">Sentence Fill</div>
+          <div class="a-desc">Complete the sentence</div>
+        </div>
+        <div class="activity-card" onclick="startActivity('test')">
+          <div class="a-icon">🏆</div>
+          <div class="a-name">Full Test</div>
+          <div class="a-desc">All 20 words · Review</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPELLING ACTIVITY AREA -->
+    <div id="spell-game-view" style="display:none;">
+      <div class="back-row">
+        <button class="btn btn-back" id="spellBackBtn" onclick="backToActivities()">← Activities</button>
+        <div class="quiz-topic" style="color:#E6A000;font-family:'Fredoka One',cursive;" id="spellActivityTitle"></div>
+      </div>
+      <div class="quiz-progress" id="spellProgress"></div>
+      <div class="progress-bar"><div class="progress-fill spelling" id="spellProgressFill" style="width:0%"></div></div>
+
+      <!-- QUIZ Activity -->
+      <div id="activity-quiz" style="display:none;">
+        <div class="word-display-area">
+          <div class="word-definition" id="quizHint"></div>
+          <div class="word-syllables" id="quizSyllables"></div>
+        </div>
+        <div class="spell-input-wrap">
+          <input class="spell-input" type="text" id="quizInput" placeholder="Type the word..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkSpellingQuiz()">
+        </div>
+        <div class="feedback-box" id="quizFeedback"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-spelling" onclick="checkSpellingQuiz()">Check ✓</button>
+          <button class="btn btn-spelling" id="quizNextBtn" onclick="nextSpelling()" style="display:none;">Next ›</button>
+          <button class="btn btn-primary" id="quizResultsBtn" onclick="showSpellResults()" style="display:none;">Results 🎉</button>
+        </div>
+      </div>
+
+      <!-- MISSING LETTERS Activity -->
+      <div id="activity-missing" style="display:none;">
+        <div class="missing-display" id="missingDisplay"></div>
+        <div class="spell-input-wrap">
+          <input class="spell-input" type="text" id="missingInput" placeholder="Type the full word..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkMissing()">
+        </div>
+        <div class="feedback-box" id="missingFeedback"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-spelling" onclick="checkMissing()">Check ✓</button>
+          <button class="btn btn-spelling" id="missingNextBtn" onclick="nextMissing()" style="display:none;">Next ›</button>
+          <button class="btn btn-primary" id="missingResultsBtn" onclick="showSpellResults()" style="display:none;">Results 🎉</button>
+        </div>
+      </div>
+
+      <!-- SCRAMBLE Activity -->
+      <div id="activity-scramble" style="display:none;">
+        <div style="text-align:center;font-size:0.95rem;font-weight:700;color:var(--text-light);margin-bottom:12px;">Tap letters to build the word:</div>
+        <div class="scramble-letters" id="scrambleLetters"></div>
+        <div style="text-align:center;font-size:0.85rem;color:var(--text-light);margin-bottom:6px;">Your answer:</div>
+        <div class="answer-slots" id="answerSlots"></div>
+        <div class="feedback-box" id="scrambleFeedback"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-back" onclick="clearScramble()">🔄 Clear</button>
+          <button class="btn btn-spelling" onclick="checkScramble()">Check ✓</button>
+          <button class="btn btn-spelling" id="scrambleNextBtn" onclick="nextScramble()" style="display:none;">Next ›</button>
+          <button class="btn btn-primary" id="scrambleResultsBtn" onclick="showSpellResults()" style="display:none;">Results 🎉</button>
+        </div>
+      </div>
+
+      <!-- SENTENCE Activity -->
+      <div id="activity-sentence" style="display:none;">
+        <div class="sentence-box" id="sentenceDisplay"></div>
+        <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;color:var(--text-light);">Word Bank:</div>
+        <div class="word-bank" id="wordBank"></div>
+        <div class="feedback-box" id="sentenceFeedback"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-spelling" id="sentenceNextBtn" onclick="nextSentence()" style="display:none;">Next ›</button>
+          <button class="btn btn-primary" id="sentenceResultsBtn" onclick="showSpellResults()" style="display:none;">Results 🎉</button>
+        </div>
+      </div>
+
+      <!-- TEST Activity -->
+      <div id="activity-test" style="display:none;">
+        <div class="test-word-num" id="testWordNum"></div>
+        <div class="test-word-display" id="testWordDisplay"></div>
+        <div class="spell-input-wrap">
+          <input class="spell-input" type="text" id="testInput" placeholder="Spell the word..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkTest()">
+        </div>
+        <div class="feedback-box" id="testFeedback"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-spelling" onclick="checkTest()">Check ✓</button>
+          <button class="btn btn-spelling" id="testNextBtn" onclick="nextTest()" style="display:none;">Next ›</button>
+          <button class="btn btn-primary" id="testResultsBtn" onclick="showSpellResults()" style="display:none;">Results 🎉</button>
+        </div>
+      </div>
+
+      <!-- SPELL RESULTS -->
+      <div class="results-area" id="spellResults">
+        <div class="results-emoji" id="spellEmoji"></div>
+        <div class="results-score" style="color:#E6A000;font-family:'Fredoka One',cursive;font-size:3.5rem;" id="spellScore"></div>
+        <div class="results-msg" id="spellMsg"></div>
+        <div class="earned-stars" id="spellStars"></div>
+        <div id="missedWords" style="margin-bottom:20px;"></div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-spelling" onclick="retrySpelling()">🔄 Try Again</button>
+          <button class="btn btn-back" onclick="backToActivities()">📚 Activities</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- REWARD MODAL -->
+<div class="modal-overlay" id="rewardModal">
+  <div class="modal">
+    <button class="close-modal" onclick="closeModal('rewardModal')">✕</button>
+    <div style="font-size:2.5rem;margin-bottom:8px;">🏆</div>
+    <h2>My Rewards!</h2>
+    <p>Earn stars to unlock yummy rewards!</p>
+    <div class="reward-items" id="rewardItems"></div>
+    <button class="btn btn-primary" onclick="closeModal('rewardModal')">Keep Learning! 🚀</button>
+  </div>
+</div>
+
+<!-- PARENT MODAL -->
+<div class="modal-overlay" id="parentModal">
+  <div class="modal parent-modal">
+    <button class="close-modal" onclick="closeModal('parentModal');resetPin()">✕</button>
+    <div id="pin-screen">
+      <div style="font-size:2rem;margin-bottom:8px;">🔒</div>
+      <h2>Parent Zone</h2>
+      <p>Enter the 4-digit PIN to continue</p>
+      <div class="pin-display">
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+        <div class="pin-dot" id="d4"></div>
+      </div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="pinPress(1)">1</button>
+        <button class="pin-key" onclick="pinPress(2)">2</button>
+        <button class="pin-key" onclick="pinPress(3)">3</button>
+        <button class="pin-key" onclick="pinPress(4)">4</button>
+        <button class="pin-key" onclick="pinPress(5)">5</button>
+        <button class="pin-key" onclick="pinPress(6)">6</button>
+        <button class="pin-key" onclick="pinPress(7)">7</button>
+        <button class="pin-key" onclick="pinPress(8)">8</button>
+        <button class="pin-key" onclick="pinPress(9)">9</button>
+        <button class="pin-key" onclick="pinClear()" style="font-size:1rem;">⌫</button>
+        <button class="pin-key" onclick="pinPress(0)">0</button>
+        <button class="pin-key" onclick="pinClear()" style="font-size:1rem;">CLR</button>
+      </div>
+      <div class="pin-error" id="pinError" style="display:none;">❌ Wrong PIN! Try again.</div>
+    </div>
+    <div id="parent-dashboard" style="display:none;">
+      <div style="font-size:2rem;margin-bottom:8px;">👨‍👩‍👧</div>
+      <div class="parent-dashboard">
+        <h3>Learning Progress</h3>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="s-val" id="statStars" style="color:#F6AD55;">0</div><div class="s-label">⭐ Stars Earned</div></div>
+          <div class="stat-card"><div class="s-val" id="statQuizzes" style="color:var(--math);">0</div><div class="s-label">📝 Quizzes Done</div></div>
+          <div class="stat-card"><div class="s-val" id="statMath" style="color:var(--math);">0</div><div class="s-label">🔢 Math Correct</div></div>
+          <div class="stat-card"><div class="s-val" id="statScience" style="color:var(--science-dark);">0</div><div class="s-label">🔬 Science Correct</div></div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="s-val" id="statSpell" style="color:#E6A000;">0</div><div class="s-label">📝 Spelling Correct</div></div>
+          <div class="stat-card"><div class="s-val" id="statAcc" style="color:var(--purple);">0%</div><div class="s-label">🎯 Accuracy</div></div>
+        </div>
+        <button class="btn btn-back" style="margin:4px;" onclick="resetProgress()">🗑️ Reset Progress</button>
+        <button class="btn btn-primary" style="margin:4px;" onclick="closeModal('parentModal');resetPin()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PARENT BTN -->
+<button class="parent-btn" onclick="openParent()">🔒 Parent Zone</button>
+
+<!-- CONFETTI CONTAINER -->
+<div class="confetti" id="confettiContainer"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════════════
+
+const MATH_TOPICS = [
+  { id: 'lines', name: 'Lines, Rays, Line Segments & Angles', icon: '📐' },
+  { id: 'plane', name: 'Plane Figures', icon: '🔷' },
+  { id: 'time', name: 'Time', icon: '⏰' },
+  { id: 'metric', name: 'Metric Units', icon: '📏' },
+  { id: 'us_units', name: 'U.S. Customary Units', icon: '📍' },
+  { id: 'geomeas', name: 'Geometric Measurements', icon: '📐' },
+  { id: 'frac_lt1', name: 'Fractions Less Than One', icon: '½' },
+  { id: 'frac_eq1', name: 'Fractions Equal to One', icon: '1️⃣' },
+  { id: 'frac_gt1', name: 'Fractions Greater Than One', icon: '🔢' },
+  { id: 'frac_nl', name: 'Fractions on a Number Line', icon: '↔️' },
+  { id: 'equiv_frac', name: 'Equivalent Fractions', icon: '⚖️' },
+  { id: 'comp_frac', name: 'Comparing Fractions', icon: '🔁' },
+  { id: 'frac_len', name: 'Fractions and Lengths', icon: '📏' },
+  { id: 'add_frac', name: 'Adding & Subtracting Fractions (Like Denominators)', icon: '➕' },
+  { id: 'frac_whole', name: 'A Fraction of a Whole Number', icon: '🔵' },
+  { id: 'tally', name: 'Tallying Data', icon: '📊' },
+  { id: 'lineplot', name: 'Line Plots', icon: '📉' },
+  { id: 'picto', name: 'Pictographs', icon: '🖼️' },
+  { id: 'bargraph', name: 'Bar Graphs', icon: '📊' },
+  { id: 'mult1', name: 'Multiplying by One-Digit Factors', icon: '✖️' },
+  { id: 'mult10', name: 'Multiplying by Powers of Ten', icon: '🔟' },
+  { id: 'mult_mult10', name: 'Multiplying One-Digit × Multiples of 10', icon: '💯' },
+  { id: 'div1', name: 'Dividing by One-Digit Divisors', icon: '➗' },
+  { id: 'div10', name: 'Dividing Multiples of Ten (No Remainder)', icon: '🔢' },
+];
+
+const SCIENCE_TOPICS = [
+  { id: 'animals_living', name: 'Animals Are Living Things', icon: '🐾' },
+  { id: 'mammals_lc', name: 'Mammals, Birds & Reptiles Life Cycles', icon: '🐦' },
+  { id: 'amphibians_lc', name: 'Amphibians, Fish & Insects Life Cycles', icon: '🐸' },
+  { id: 'animals_ago', name: 'Animals of Long Ago', icon: '🦕' },
+  { id: 'fossils', name: 'Looking at Fossils', icon: '🪨' },
+  { id: 'wildlife', name: 'Saving Wildlife', icon: '🌿' },
+  { id: 'obs_props', name: 'Observing Properties', icon: '👀' },
+  { id: 'test_props', name: 'Testing Properties', icon: '🧪' },
+  { id: 'mass_temp', name: 'Measuring Mass and Temperature', icon: '⚖️' },
+  { id: 'light_travel', name: 'How Light Travels', icon: '💡' },
+  { id: 'light_matter', name: 'Light and Matter', icon: '🔆' },
+  { id: 'sound', name: 'Sound', icon: '🔊' },
+  { id: 'bodies_water', name: 'Bodies of Water', icon: '🌊' },
+  { id: 'water_cycle', name: 'The Water Cycle', icon: '🔄' },
+  { id: 'air_temp', name: 'Air Temperature and Wind', icon: '🌬️' },
+  { id: 'water_atm', name: 'Water in the Atmosphere & Climate', icon: '☁️' },
+  { id: 'renew_res', name: 'Renewable & Nonrenewable Resources', icon: '♻️' },
+  { id: 'renew_energy', name: 'Renewable & Nonrenewable Energy', icon: '⚡' },
+  { id: 'conserve', name: 'Conserving Natural Resources', icon: '🌱' },
+];
+
+const MATH_QUESTIONS = {
+  lines: [
+    { q: 'What is a RAY?', choices: ['Has two endpoints', 'Starts at a point, goes on forever in one direction', 'A flat shape', 'Has no endpoints'], ans: 1 },
+    { q: 'What is a RIGHT ANGLE?', choices: ['An angle less than 90°', 'An angle greater than 90°', 'Exactly 90°', 'Exactly 180°'], ans: 2 },
+    { q: 'A LINE SEGMENT has...', choices: ['No endpoints', 'One endpoint', 'Two endpoints', 'Infinite length'], ans: 2 },
+    { q: 'An OBTUSE angle is...', choices: ['Less than 90°', 'Exactly 90°', 'Between 90° and 180°', 'Exactly 180°'], ans: 2 },
+    { q: 'Parallel lines...', choices: ['Cross at 90°', 'Never meet', 'Always cross', 'Are the same length'], ans: 1 },
+  ],
+  plane: [
+    { q: 'How many sides does a pentagon have?', choices: ['4', '5', '6', '8'], ans: 1 },
+    { q: 'A quadrilateral has how many sides?', choices: ['3', '4', '5', '6'], ans: 1 },
+    { q: 'A polygon with 6 sides is called a...', choices: ['Pentagon', 'Octagon', 'Hexagon', 'Heptagon'], ans: 2 },
+    { q: 'All sides equal AND all angles equal describes a...', choices: ['Rectangle', 'Rhombus', 'Regular polygon', 'Trapezoid'], ans: 2 },
+    { q: 'A triangle with all equal sides is called...', choices: ['Scalene', 'Isosceles', 'Right', 'Equilateral'], ans: 3 },
+  ],
+  time: [
+    { q: 'How many minutes are in one hour?', choices: ['30', '45', '60', '100'], ans: 2 },
+    { q: 'How many seconds are in one minute?', choices: ['10', '60', '100', '30'], ans: 1 },
+    { q: 'If it is 3:45, what time will it be in 30 minutes?', choices: ['4:15', '3:15', '4:45', '4:00'], ans: 0 },
+    { q: 'How many hours are in one day?', choices: ['12', '20', '24', '48'], ans: 2 },
+    { q: 'A quarter past 2 means...', choices: ['2:25', '2:15', '2:45', '2:05'], ans: 1 },
+  ],
+  metric: [
+    { q: 'How many centimetres are in 1 metre?', choices: ['10', '100', '1000', '50'], ans: 1 },
+    { q: 'How many millilitres in 1 litre?', choices: ['100', '500', '1000', '2000'], ans: 2 },
+    { q: 'Which unit measures mass in metric?', choices: ['Pounds', 'Grams', 'Ounces', 'Inches'], ans: 1 },
+    { q: 'How many metres are in 1 kilometre?', choices: ['100', '500', '1000', '10000'], ans: 2 },
+    { q: '500 cm = ___ metres', choices: ['5', '50', '500', '0.5'], ans: 0 },
+  ],
+  us_units: [
+    { q: 'How many inches are in 1 foot?', choices: ['10', '12', '24', '8'], ans: 1 },
+    { q: 'How many feet are in 1 yard?', choices: ['2', '3', '4', '6'], ans: 1 },
+    { q: 'How many ounces in 1 pound?', choices: ['8', '12', '16', '20'], ans: 2 },
+    { q: 'How many cups in 1 pint?', choices: ['1', '2', '4', '8'], ans: 1 },
+    { q: 'How many pints in 1 quart?', choices: ['2', '4', '6', '8'], ans: 0 },
+  ],
+  geomeas: [
+    { q: 'What is the PERIMETER of a square with sides of 5 cm?', choices: ['10 cm', '20 cm', '25 cm', '15 cm'], ans: 1 },
+    { q: 'What is the AREA of a rectangle 4 cm × 6 cm?', choices: ['10 sq cm', '20 sq cm', '24 sq cm', '18 sq cm'], ans: 2 },
+    { q: 'Area is measured in...', choices: ['Square units', 'Cubic units', 'Linear units', 'Degrees'], ans: 0 },
+    { q: 'Perimeter is the...', choices: ['Area inside a shape', 'Distance around a shape', 'Number of sides', 'Volume of a shape'], ans: 1 },
+    { q: 'What is the perimeter of a rectangle 3 m × 7 m?', choices: ['10 m', '21 m', '20 m', '18 m'], ans: 2 },
+  ],
+  frac_lt1: [
+    { q: 'Which fraction is LESS than 1?', choices: ['5/4', '6/6', '3/4', '8/7'], ans: 2 },
+    { q: 'What does the DENOMINATOR tell us?', choices: ['How many parts taken', 'How many equal parts in the whole', 'The whole number', 'The fraction size'], ans: 1 },
+    { q: 'In 3/5, the numerator is...', choices: ['5', '3', '2', '8'], ans: 1 },
+    { q: 'Which shows 1/4 shaded on a model divided into 4 equal parts?', choices: ['3 parts shaded', '1 part shaded', '2 parts shaded', 'All shaded'], ans: 1 },
+    { q: '2/8 is the same as...', choices: ['2/4', '1/4', '1/2', '3/4'], ans: 1 },
+  ],
+  frac_eq1: [
+    { q: 'Which fraction EQUALS 1?', choices: ['3/4', '5/6', '7/7', '2/3'], ans: 2 },
+    { q: '4/4 equals...', choices: ['Less than 1', '1 whole', 'More than 1', '1/4'], ans: 1 },
+    { q: 'A fraction equals 1 when numerator and denominator are...', choices: ['Different', 'Equal', 'Numerator is bigger', 'Denominator is bigger'], ans: 1 },
+    { q: '9/9 = ?', choices: ['9', '0', '1', '1/9'], ans: 2 },
+    { q: 'Which fraction does NOT equal 1?', choices: ['6/6', '8/8', '5/5', '5/6'], ans: 3 },
+  ],
+  frac_gt1: [
+    { q: 'Which fraction is GREATER than 1?', choices: ['3/5', '4/4', '7/4', '2/9'], ans: 2 },
+    { q: '11/4 as a mixed number is...', choices: ['2 and 3/4', '2 and 1/4', '3 and 1/4', '1 and 3/4'], ans: 0 },
+    { q: 'A fraction greater than 1 has the numerator...', choices: ['Less than denominator', 'Equal to denominator', 'Greater than denominator', 'Equal to zero'], ans: 2 },
+    { q: '9/4 is between which whole numbers?', choices: ['1 and 2', '2 and 3', '3 and 4', '4 and 5'], ans: 1 },
+    { q: '2 and 1/3 as an improper fraction is...', choices: ['5/3', '6/3', '7/3', '8/3'], ans: 2 },
+  ],
+  frac_nl: [
+    { q: 'On a number line from 0 to 1, where does 1/2 go?', choices: ['At 1/4', 'At the middle', 'At 3/4', 'At the end'], ans: 1 },
+    { q: 'What fraction is at the halfway point between 0 and 1?', choices: ['1/4', '1/3', '1/2', '2/3'], ans: 2 },
+    { q: '1/4 on a number line is...', choices: ['Closer to 1 than 0', 'Closer to 0 than 1', 'At exactly 1', 'Halfway between'], ans: 1 },
+    { q: 'If a number line is divided into 3 equal parts, each part represents...', choices: ['1/4', '1/3', '1/2', '1/6'], ans: 1 },
+    { q: 'Which is farther from 0 on a number line: 3/4 or 1/4?', choices: ['1/4', '3/4', 'They are equal', 'Cannot tell'], ans: 1 },
+  ],
+  equiv_frac: [
+    { q: '1/2 is equivalent to...', choices: ['2/6', '2/4', '3/8', '4/10'], ans: 1 },
+    { q: 'Which pair shows equivalent fractions?', choices: ['1/3 and 2/4', '2/4 and 4/8', '1/2 and 2/3', '3/4 and 2/3'], ans: 1 },
+    { q: 'To make equivalent fractions, you multiply or divide...', choices: ['Only the numerator', 'Only the denominator', 'Both by the same number', 'Just add 1'], ans: 2 },
+    { q: '3/6 simplified is...', choices: ['2/4', '1/2', '3/4', '1/3'], ans: 1 },
+    { q: '2/3 = ?/9', choices: ['3', '4', '6', '5'], ans: 2 },
+  ],
+  comp_frac: [
+    { q: 'Which is GREATER: 3/4 or 1/4?', choices: ['1/4', '3/4', 'They are equal', 'Cannot tell'], ans: 1 },
+    { q: 'Compare: 2/3 ___ 3/4 (same whole)', choices: ['>', '<', '=', 'Cannot compare'], ans: 1 },
+    { q: 'When comparing fractions with the SAME denominator, compare the...', choices: ['Denominators', 'Numerators', 'Whole numbers', 'Units'], ans: 1 },
+    { q: 'Which is LESS: 5/8 or 3/8?', choices: ['5/8', '3/8', 'They are equal', 'Cannot tell'], ans: 1 },
+    { q: '1/2 compared to 1/3 is...', choices: ['Smaller', 'Equal', 'Larger', 'Same numerator'], ans: 2 },
+  ],
+  frac_len: [
+    { q: 'A rope is 3/4 m long. Another is 1/4 m. Total length?', choices: ['2/4 m', '4/4 m (1 m)', '3/8 m', '2/8 m'], ans: 1 },
+    { q: 'If a path is 1/2 km, how long are 2 such paths?', choices: ['1/2 km', '1 km', '2 km', '3/2 km'], ans: 1 },
+    { q: 'A ribbon cut into 4 equal pieces, each is 1/4 of the total. 2 pieces = ?', choices: ['1/4', '2/8', '2/4', '3/4'], ans: 2 },
+    { q: 'Rod is 6/8 m. 3/8 is removed. What is left?', choices: ['3/8 m', '9/8 m', '6/16 m', '1/2 m'], ans: 0 },
+    { q: '1/3 of 12 metres = ?', choices: ['3 m', '4 m', '6 m', '2 m'], ans: 1 },
+  ],
+  add_frac: [
+    { q: '1/5 + 2/5 = ?', choices: ['3/10', '3/5', '2/5', '3/25'], ans: 1 },
+    { q: '4/7 - 2/7 = ?', choices: ['6/7', '2/14', '2/7', '3/7'], ans: 2 },
+    { q: '3/8 + 3/8 = ?', choices: ['6/16', '6/8', '3/4', '9/8'], ans: 1 },
+    { q: '5/9 - 1/9 = ?', choices: ['4/18', '6/9', '4/9', '5/8'], ans: 2 },
+    { q: '2/6 + 3/6 = ?', choices: ['5/12', '5/6', '5/36', '1/6'], ans: 1 },
+  ],
+  frac_whole: [
+    { q: '1/2 of 10 = ?', choices: ['5', '2', '10', '4'], ans: 0 },
+    { q: '1/4 of 20 = ?', choices: ['4', '8', '5', '10'], ans: 2 },
+    { q: '1/3 of 15 = ?', choices: ['3', '5', '6', '4'], ans: 1 },
+    { q: '2/3 of 12 = ?', choices: ['4', '6', '8', '9'], ans: 2 },
+    { q: '3/4 of 16 = ?', choices: ['8', '10', '12', '14'], ans: 2 },
+  ],
+  tally: [
+    { q: 'A tally mark looks like...', choices: ['A circle', 'A vertical or diagonal line', 'A star', 'A square'], ans: 1 },
+    { q: '5 tally marks are shown as...', choices: ['IIII', '||||', 'Four lines crossed by one', 'IIIII'], ans: 2 },
+    { q: 'If you have 12 items to tally, how many groups of 5 do you make?', choices: ['1', '2', '3', '4'], ans: 1 },
+    { q: 'Tally charts are used to...', choices: ['Write stories', 'Record and count data', 'Draw pictures', 'Measure length'], ans: 1 },
+    { q: 'IIII |  = how many tallies?', choices: ['4', '5', '6', '7'], ans: 2 },
+  ],
+  lineplot: [
+    { q: 'A line plot displays data on...', choices: ['A bar', 'A number line', 'A grid', 'A circle'], ans: 1 },
+    { q: 'Each X on a line plot represents...', choices: ['A measurement', 'A category', 'One data value', 'Two values'], ans: 2 },
+    { q: 'Line plots are good for showing...', choices: ['Categories only', 'Fractional data and spread', 'Percentages', 'Colours'], ans: 1 },
+    { q: 'On a line plot, the mode is...', choices: ['The middle value', 'The value with the most Xs', 'The highest value', 'The total'], ans: 1 },
+    { q: 'A line plot title should explain...', choices: ['Who made it', 'The subject of the data', 'The number of X marks', 'The date'], ans: 1 },
+  ],
+  picto: [
+    { q: 'In a pictograph, each picture can represent...', choices: ['Exactly 1 item', 'Any number of items shown in the key', 'Unlimited items', '10 items always'], ans: 1 },
+    { q: 'The key in a pictograph tells you...', choices: ['The title', 'What each symbol stands for', 'How to draw it', 'The biggest value'], ans: 1 },
+    { q: 'If 🍎 = 4 apples and you see 3 🍎, how many apples?', choices: ['3', '7', '12', '8'], ans: 2 },
+    { q: 'A half-symbol in a pictograph usually represents...', choices: ['The whole value', 'Zero', 'Half the key value', 'Double the key value'], ans: 2 },
+    { q: 'Pictographs use ___ to show data.', choices: ['Lines', 'Bars', 'Pictures or symbols', 'Dots only'], ans: 2 },
+  ],
+  bargraph: [
+    { q: 'The vertical axis of a bar graph is called the...', choices: ['X-axis', 'Y-axis', 'Title', 'Key'], ans: 1 },
+    { q: 'A bar graph is used to compare...', choices: ['Time only', 'Different categories of data', 'Fractions only', 'Angles'], ans: 1 },
+    { q: 'The scale on a bar graph tells you...', choices: ['The colour of bars', 'The number each interval represents', 'The title', 'The date'], ans: 1 },
+    { q: 'In a horizontal bar graph, bars go...', choices: ['Up and down', 'Side to side', 'In a circle', 'Diagonally'], ans: 1 },
+    { q: 'A bar that reaches 35 on the y-axis means a value of...', choices: ['30', '40', '35', '3.5'], ans: 2 },
+  ],
+  mult1: [
+    { q: '7 × 8 = ?', choices: ['54', '56', '63', '48'], ans: 1 },
+    { q: '9 × 6 = ?', choices: ['45', '63', '54', '48'], ans: 2 },
+    { q: '4 × 7 = ?', choices: ['21', '24', '28', '32'], ans: 2 },
+    { q: '6 × 6 = ?', choices: ['30', '36', '42', '24'], ans: 1 },
+    { q: '8 × 9 = ?', choices: ['63', '81', '72', '64'], ans: 2 },
+  ],
+  mult10: [
+    { q: '3 × 10 = ?', choices: ['13', '30', '300', '3000'], ans: 1 },
+    { q: '4 × 100 = ?', choices: ['40', '400', '4000', '14'], ans: 1 },
+    { q: '2 × 1000 = ?', choices: ['200', '20', '2000', '12000'], ans: 2 },
+    { q: '5 × 10 = ?', choices: ['15', '50', '500', '5000'], ans: 1 },
+    { q: '6 × 100 = ?', choices: ['60', '6', '600', '6000'], ans: 2 },
+  ],
+  mult_mult10: [
+    { q: '3 × 20 = ?', choices: ['23', '60', '600', '6'], ans: 1 },
+    { q: '4 × 50 = ?', choices: ['200', '20', '54', '2000'], ans: 0 },
+    { q: '7 × 30 = ?', choices: ['37', '21', '210', '2100'], ans: 2 },
+    { q: '5 × 40 = ?', choices: ['9', '200', '20', '2000'], ans: 1 },
+    { q: '6 × 60 = ?', choices: ['36', '360', '3600', '66'], ans: 1 },
+  ],
+  div1: [
+    { q: '42 ÷ 7 = ?', choices: ['5', '6', '7', '8'], ans: 1 },
+    { q: '36 ÷ 6 = ?', choices: ['5', '6', '7', '8'], ans: 1 },
+    { q: '56 ÷ 8 = ?', choices: ['6', '7', '8', '9'], ans: 1 },
+    { q: '27 ÷ 9 = ?', choices: ['2', '3', '4', '5'], ans: 1 },
+    { q: '48 ÷ 6 = ?', choices: ['6', '7', '8', '9'], ans: 2 },
+  ],
+  div10: [
+    { q: '60 ÷ 6 = ?', choices: ['100', '10', '6', '60'], ans: 1 },
+    { q: '80 ÷ 4 = ?', choices: ['20', '2', '200', '8'], ans: 0 },
+    { q: '90 ÷ 3 = ?', choices: ['3', '27', '30', '300'], ans: 2 },
+    { q: '120 ÷ 4 = ?', choices: ['3', '30', '300', '48'], ans: 1 },
+    { q: '240 ÷ 6 = ?', choices: ['4', '400', '40', '14'], ans: 2 },
+  ],
+};
+
+const SCIENCE_QUESTIONS = {
+  animals_living: [
+    { q: 'Which of these is a characteristic of ALL living things?', choices: ['Can fly', 'Need food and water', 'Have fur', 'Live in water'], ans: 1 },
+    { q: 'Animals grow and change. This is called...', choices: ['Movement', 'Nutrition', 'Growth', 'Reproduction'], ans: 2 },
+    { q: 'What do all animals need to survive?', choices: ['Sunlight only', 'Food, water, and shelter', 'Water only', 'Air only'], ans: 1 },
+    { q: 'Animals respond to their environment. For example, a rabbit runs from a fox. This shows...', choices: ['Nutrition', 'Response to stimuli', 'Reproduction', 'Excretion'], ans: 1 },
+    { q: 'Living things reproduce because...', choices: ['It keeps them healthy', 'To make more of their own kind', 'To grow bigger', 'They enjoy it'], ans: 1 },
+  ],
+  mammals_lc: [
+    { q: 'Baby mammals usually...', choices: ['Hatch from eggs', 'Are born live and fed milk', 'Grow in water', 'Come from seeds'], ans: 1 },
+    { q: 'Birds hatch from...', choices: ['Live births', 'Eggs', 'Buds', 'The ground'], ans: 1 },
+    { q: 'Which animal is a MAMMAL?', choices: ['Eagle', 'Crocodile', 'Salmon', 'Dolphin'], ans: 3 },
+    { q: 'Reptiles are...', choices: ['Warm-blooded', 'Cold-blooded', 'Always in water', 'Born live always'], ans: 1 },
+    { q: 'What do baby birds eat first?', choices: ['Seeds only', 'Food brought by parents', 'Water', 'Insects only'], ans: 1 },
+  ],
+  amphibians_lc: [
+    { q: 'Frogs start life as...', choices: ['Tadpoles', 'Tiny frogs', 'Eggs on land', 'Caterpillars'], ans: 0 },
+    { q: 'Insects go through COMPLETE metamorphosis in this order:', choices: ['Egg → Larva → Pupa → Adult', 'Egg → Nymph → Adult', 'Larva → Egg → Adult', 'Adult → Egg → Larva'], ans: 0 },
+    { q: 'Which animal is an AMPHIBIAN?', choices: ['Snake', 'Toad', 'Shark', 'Eagle'], ans: 1 },
+    { q: 'Fish reproduce by...', choices: ['Laying eggs in water usually', 'Live birth only', 'Budding', 'Spores'], ans: 0 },
+    { q: 'Butterflies are insects that go through...', choices: ['Incomplete metamorphosis', 'Complete metamorphosis', 'No metamorphosis', 'Partial birth'], ans: 1 },
+  ],
+  animals_ago: [
+    { q: 'Dinosaurs lived how long ago?', choices: ['Thousands of years', 'Hundreds of years', 'Millions of years', 'Billions of years'], ans: 2 },
+    { q: 'An animal that no longer exists is called...', choices: ['Rare', 'Extinct', 'Endangered', 'Adapted'], ans: 1 },
+    { q: 'Woolly mammoths looked similar to modern...', choices: ['Rhinos', 'Elephants', 'Horses', 'Bears'], ans: 1 },
+    { q: 'Animals of long ago are similar to today\'s animals because...', choices: ['They look identical', 'Modern animals may have descended from them', 'They live in the same places', 'They eat the same food'], ans: 1 },
+    { q: 'The Tyrannosaurus Rex was known for...', choices: ['Being very small', 'Having large jaws and tiny arms', 'Flying high', 'Living in the ocean'], ans: 1 },
+  ],
+  fossils: [
+    { q: 'A fossil is...', choices: ['A type of rock', 'The preserved remains or trace of an ancient organism', 'A living animal', 'A type of plant'], ans: 1 },
+    { q: 'Where are most fossils found?', choices: ['In trees', 'Sedimentary rock', 'Volcanic rock', 'Sand dunes'], ans: 1 },
+    { q: 'Scientists who study fossils are called...', choices: ['Geologists', 'Astronomers', 'Paleontologists', 'Biologists'], ans: 2 },
+    { q: 'Fossils tell us about...', choices: ['Future animals', 'Weather patterns', 'Animals and plants from the past', 'Space exploration'], ans: 2 },
+    { q: 'A trace fossil might be a...', choices: ['Whole skeleton', 'Footprint preserved in rock', 'Live animal', 'Piece of bark'], ans: 1 },
+  ],
+  wildlife: [
+    { q: 'An ENDANGERED species is one that...', choices: ['Is very common', 'Is at risk of becoming extinct', 'Lives in a zoo', 'Eats other animals'], ans: 1 },
+    { q: 'Which action helps save wildlife?', choices: ['Building more roads in forests', 'Creating protected nature reserves', 'Hunting without limits', 'Cutting down all trees'], ans: 1 },
+    { q: 'Habitat destruction threatens wildlife because...', choices: ['Animals get too hot', 'Animals lose the places they need to live', 'Food becomes cheaper', 'Animals grow faster'], ans: 1 },
+    { q: 'Which organization helps protect wildlife?', choices: ['Road builders', 'Wildlife conservation groups', 'Mining companies', 'Factories'], ans: 1 },
+    { q: 'Pollution in rivers can harm...', choices: ['Only fish', 'Fish, birds, and other water-dependent animals', 'Only birds', 'No animals'], ans: 1 },
+  ],
+  obs_props: [
+    { q: 'Which sense do we use to observe COLOR?', choices: ['Hearing', 'Touch', 'Sight', 'Taste'], ans: 2 },
+    { q: 'Texture is a property we observe using...', choices: ['Sight and Touch', 'Smell', 'Taste', 'Hearing'], ans: 0 },
+    { q: 'Which is a PHYSICAL property?', choices: ['How fast it burns', 'Its colour and shape', 'Whether it rusts', 'Its chemical formula'], ans: 1 },
+    { q: 'Using our senses to find out about objects is called...', choices: ['Measuring', 'Observing', 'Testing', 'Recording'], ans: 1 },
+    { q: 'Mass, colour, and texture are examples of...', choices: ['Chemical properties', 'Physical properties', 'Reactions', 'Changes'], ans: 1 },
+  ],
+  test_props: [
+    { q: 'To test if an object sinks or floats, you would...', choices: ['Weigh it on a scale', 'Place it in water', 'Smell it', 'Heat it'], ans: 1 },
+    { q: 'Hardness is tested by...', choices: ['Smelling the object', 'Scratching it with another material', 'Weighing it', 'Cooling it'], ans: 1 },
+    { q: 'Magnetic properties are tested using...', choices: ['Water', 'A thermometer', 'A magnet', 'A ruler'], ans: 2 },
+    { q: 'Why do scientists repeat tests?', choices: ['To waste time', 'To make sure results are reliable', 'To change the experiment', 'To impress others'], ans: 1 },
+    { q: 'Which material would likely conduct electricity?', choices: ['Plastic', 'Wood', 'Rubber', 'Copper wire'], ans: 3 },
+  ],
+  mass_temp: [
+    { q: 'Mass is measured using...', choices: ['A thermometer', 'A ruler', 'A balance or scale', 'A clock'], ans: 2 },
+    { q: 'Temperature is measured in...', choices: ['Grams or kilograms', 'Degrees (Celsius or Fahrenheit)', 'Metres or feet', 'Litres or gallons'], ans: 1 },
+    { q: 'Water boils at...', choices: ['0°C', '50°C', '100°C', '37°C'], ans: 2 },
+    { q: 'Which tool measures temperature?', choices: ['Ruler', 'Thermometer', 'Balance', 'Stopwatch'], ans: 1 },
+    { q: 'Water freezes at...', choices: ['100°C', '37°C', '20°C', '0°C'], ans: 3 },
+  ],
+  light_travel: [
+    { q: 'Light travels in...', choices: ['Curved lines', 'Straight lines', 'Zigzag patterns', 'Circles'], ans: 1 },
+    { q: 'Light travels fastest through...', choices: ['Water', 'Glass', 'Empty space (vacuum)', 'Air'], ans: 2 },
+    { q: 'A shadow forms because light...', choices: ['Bends around objects', 'Cannot pass through opaque objects', 'Goes through everything', 'Bounces upward'], ans: 1 },
+    { q: 'What is the speed of light approximately?', choices: ['300 km/s', '30,000 km/s', '300,000 km/s', '3,000 km/s'], ans: 2 },
+    { q: 'Light from the Sun takes about ___ minutes to reach Earth.', choices: ['1', '8', '60', '24'], ans: 1 },
+  ],
+  light_matter: [
+    { q: 'A TRANSPARENT material...', choices: ['Blocks all light', 'Lets light pass through clearly', 'Reflects all light', 'Absorbs all light'], ans: 1 },
+    { q: 'A TRANSLUCENT material...', choices: ['Blocks all light', 'Lets some light through but scatters it', 'Is completely see-through', 'Reflects all light'], ans: 1 },
+    { q: 'OPAQUE materials...', choices: ['Let all light through', 'Block light and form shadows', 'Bend light', 'Glow in the dark'], ans: 1 },
+    { q: 'When light hits a mirror, it is...', choices: ['Absorbed', 'Transmitted', 'Reflected', 'Destroyed'], ans: 2 },
+    { q: 'A PRISM can split white light into...', choices: ['Black and white', 'A rainbow of colours', 'Just red and blue', 'Nothing'], ans: 1 },
+  ],
+  sound: [
+    { q: 'Sound is caused by...', choices: ['Light', 'Vibrations', 'Temperature', 'Gravity'], ans: 1 },
+    { q: 'Sound travels fastest through...', choices: ['Air', 'Water', 'Solids (like metal)', 'Space (vacuum)'], ans: 2 },
+    { q: 'PITCH refers to how...', choices: ['Loud a sound is', 'High or low a sound is', 'Fast a sound travels', 'Clear a sound is'], ans: 1 },
+    { q: 'Volume refers to...', choices: ['How high the sound is', 'How loud or soft a sound is', 'The speed of sound', 'The colour of sound'], ans: 1 },
+    { q: 'Sound CANNOT travel through...', choices: ['Water', 'Air', 'Empty space (vacuum)', 'Metal'], ans: 2 },
+  ],
+  bodies_water: [
+    { q: 'Which is the LARGEST body of water?', choices: ['Lake', 'River', 'Ocean', 'Pond'], ans: 2 },
+    { q: 'A river flows...', choices: ['In circles', 'From a source toward a larger body of water', 'Uphill always', 'Underground only'], ans: 1 },
+    { q: 'An OCEAN is...', choices: ['A small body of fresh water', 'A large body of salt water', 'A flowing river', 'An underground lake'], ans: 1 },
+    { q: 'Which body of water is usually fresh water?', choices: ['Ocean', 'Sea', 'Lake or river', 'All water bodies'], ans: 2 },
+    { q: 'A GULF is...', choices: ['A small pond', 'A part of an ocean or sea reaching into land', 'A mountain stream', 'An underground river'], ans: 1 },
+  ],
+  water_cycle: [
+    { q: 'Water that rises as vapor into the air is called...', choices: ['Precipitation', 'Condensation', 'Evaporation', 'Runoff'], ans: 2 },
+    { q: 'When water vapor cools and forms clouds, this is called...', choices: ['Evaporation', 'Condensation', 'Precipitation', 'Collection'], ans: 1 },
+    { q: 'Rain, snow, and hail are all forms of...', choices: ['Evaporation', 'Condensation', 'Precipitation', 'Transpiration'], ans: 2 },
+    { q: 'Energy from the ___ drives the water cycle.', choices: ['Moon', 'Wind', 'Sun', 'Earth\'s core'], ans: 2 },
+    { q: 'After precipitation, water that flows over land is called...', choices: ['Runoff', 'Evaporation', 'Condensation', 'Infiltration'], ans: 0 },
+  ],
+  air_temp: [
+    { q: 'Wind is caused by...', choices: ['The moon pulling air', 'Differences in air pressure', 'The rotation of clouds', 'Ocean currents only'], ans: 1 },
+    { q: 'A THERMOMETER measures...', choices: ['Wind speed', 'Air pressure', 'Air temperature', 'Rainfall'], ans: 2 },
+    { q: 'Wind blows FROM areas of ___ pressure to ___ pressure.', choices: ['Low to high', 'High to low', 'Warm to cold', 'Cold to warm'], ans: 1 },
+    { q: 'An ANEMOMETER measures...', choices: ['Temperature', 'Rainfall', 'Wind speed', 'Air pressure'], ans: 2 },
+    { q: 'Generally, air near the equator is ___ than at the poles.', choices: ['Colder', 'Warmer', 'Drier', 'Heavier'], ans: 1 },
+  ],
+  water_atm: [
+    { q: 'Clouds are made of...', choices: ['Cotton fibres', 'Tiny water droplets or ice crystals', 'Gas only', 'Smoke'], ans: 1 },
+    { q: 'FOG is...', choices: ['Rain that didn\'t reach the ground', 'A cloud at ground level', 'Frozen dew', 'Steam from lakes'], ans: 1 },
+    { q: 'Climate describes a region\'s weather...', choices: ['For one day', 'Over a long period of time', 'During one season', 'During storms only'], ans: 1 },
+    { q: 'HUMIDITY measures the amount of ___ in the air.', choices: ['Oxygen', 'Carbon dioxide', 'Water vapor', 'Nitrogen'], ans: 2 },
+    { q: 'A DESERT climate is characterized by...', choices: ['Heavy rainfall', 'Very little precipitation', 'Lots of snow', 'High humidity'], ans: 1 },
+  ],
+  renew_res: [
+    { q: 'Which resource is RENEWABLE?', choices: ['Coal', 'Oil', 'Natural gas', 'Trees (with replanting)'], ans: 3 },
+    { q: 'Which resource is NON-RENEWABLE?', choices: ['Solar energy', 'Wind', 'Coal', 'Water'], ans: 2 },
+    { q: 'Fossil fuels (coal, oil, gas) are non-renewable because...', choices: ['They are too cheap', 'They take millions of years to form', 'They grow on trees', 'They come from water'], ans: 1 },
+    { q: 'Water can be considered a renewable resource because...', choices: ['We make it in factories', 'The water cycle constantly renews it', 'It never runs out', 'Animals produce it'], ans: 1 },
+    { q: 'Which energy source is renewable?', choices: ['Natural gas', 'Petroleum', 'Solar energy', 'Coal'], ans: 2 },
+  ],
+  renew_energy: [
+    { q: 'Solar energy comes from...', choices: ['The wind', 'The Sun', 'Water', 'Coal'], ans: 1 },
+    { q: 'Wind turbines convert wind into...', choices: ['Water', 'Heat', 'Electricity', 'Oil'], ans: 2 },
+    { q: 'Hydroelectric power is generated using...', choices: ['Sunlight', 'Moving water', 'Wind', 'Steam from coal'], ans: 1 },
+    { q: 'Why is renewable energy important?', choices: ['It is always cheaper', 'It will not run out and causes less pollution', 'It requires no maintenance', 'It is only used in sunny places'], ans: 1 },
+    { q: 'Burning fossil fuels can cause...', choices: ['Clean air', 'Air pollution and greenhouse gases', 'More sunshine', 'Cooler temperatures'], ans: 1 },
+  ],
+  conserve: [
+    { q: 'Conserving natural resources means...', choices: ['Using as much as possible', 'Using resources wisely and reducing waste', 'Throwing resources away', 'Ignoring resource use'], ans: 1 },
+    { q: 'Which action CONSERVES water?', choices: ['Leaving the tap running', 'Taking very long showers', 'Fixing leaky taps and using less water', 'Watering plants in the midday heat'], ans: 2 },
+    { q: 'RECYCLING helps conserve resources by...', choices: ['Creating more waste', 'Reusing materials to reduce what\'s needed', 'Using more energy', 'Making new materials from scratch'], ans: 1 },
+    { q: 'Planting trees helps conserve...', choices: ['Only soil', 'Air quality, soil, and habitats', 'Just water', 'Nothing useful'], ans: 1 },
+    { q: 'Using less electricity helps conserve...', choices: ['Water only', 'Fossil fuels and reduces pollution', 'Sunlight', 'Soil only'], ans: 1 },
+  ],
+};
+
+// ══ SPELLING DATA ══
+const WORKSHEETS = {
+  2: {
+    name: 'Worksheet 2',
+    words: ['evening','bride','grand','country','invited','excited','ballgown','buckles','fastening','ribbons','finished','thought','tie','crying','angrily','replied','covered','pointing','ragged','tend'],
+    hints: [
+      'Time after the afternoon but before night',
+      'A woman on her wedding day',
+      'Very impressive or large',
+      'A nation or rural area',
+      'Asked to come to an event',
+      'Very happy and enthusiastic',
+      'A beautiful long dress for a ball',
+      'Fasteners shaped like a loop and bar',
+      'Attaching or securing something',
+      'Long, thin strips of fabric used for decoration',
+      'Completed; done',
+      'Past tense of "think"',
+      'A knot made with ribbon or string',
+      'Shedding tears',
+      'In an angry way',
+      'Answered or responded',
+      'Had something on top; concealed',
+      'Showing the direction with a finger',
+      'Torn, worn out, and in poor condition',
+      'To look after something',
+    ],
+    sentences: [
+      'The ball will take place in the ____ when the stars come out.',
+      'The ____ wore a beautiful white dress on her wedding day.',
+      'The castle was so ____ and tall that everyone was amazed.',
+      'They drove through the ____ past green fields and farms.',
+      'She was ____ to the princess\'s birthday party.',
+      'The children were so ____ about the surprise.',
+      'Cinderella wore a sparkling ____ to the ball.',
+      'He polished the silver ____ on his shoes until they shone.',
+      'She was busy ____ the bow on the present.',
+      'The dress was decorated with pink and gold ____.',
+      'By midnight, the dance was completely ____.',
+      'She ____ carefully before giving her answer.',
+      'Can you help me ____ this knot in my shoelace?',
+      'The little girl was ____ because she could not go to the party.',
+      'She ____ stamped her foot and crossed her arms.',
+      'He smiled and ____ that he would be happy to help.',
+      'The table was ____ in a beautiful white cloth.',
+      'He was ____ at the strange figure at the door.',
+      'Her old dress was ____ and covered in patches.',
+      'It is important to ____ to small plants every day.',
+    ],
+  },
+  3: {
+    name: 'Worksheet 3',
+    words: ['carriage','firewood','accompany','cloak','finest','gown','instructions','protect','wipe','searched','watery','coach','imagine','inviting','moonlight','transformed','directions','pantry','disappeared','steps'],
+    hints: [
+      'A wheeled vehicle pulled by horses',
+      'Wood cut for burning in a fire',
+      'To go somewhere with someone',
+      'A long loose coat or cape',
+      'Best quality; most beautiful',
+      'A long elegant dress',
+      'Directions on how to do something',
+      'To keep safe from harm',
+      'To clean something by rubbing gently',
+      'Looked carefully to find something',
+      'Wet or full of tears',
+      'A carriage; also someone who trains',
+      'To picture something in your mind',
+      'Making you want to come in or join',
+      'The gentle light from the moon',
+      'Changed completely into something different',
+      'Instructions about which way to go',
+      'A small room for storing food',
+      'Vanished; gone from sight',
+      'Stairs or footsteps; moves to reach something',
+    ],
+    sentences: [
+      'The pumpkin was turned into a golden ____.',
+      'She carried the ____ in from the garden for the fire.',
+      'Would you like me to ____ you to the palace gates?',
+      'She wrapped a warm ____ around her shoulders.',
+      'She wore the ____ silk dress in the whole kingdom.',
+      'The fairy godmother made a beautiful ____ appear.',
+      'She read the ____ carefully before she began.',
+      'The magic spell helped ____ her from the storm.',
+      'Please ____ your shoes before coming inside.',
+      'She ____ every room in the palace for the glass slipper.',
+      'Her eyes were ____ after she had been crying.',
+      'The pumpkin became a magnificent ____.',
+      'Close your eyes and ____ you are at the royal ball.',
+      'The warm smell of baking made the kitchen very ____.',
+      'The garden looked magical in the silver ____.',
+      'The plain pumpkin was ____ into a golden carriage.',
+      'She gave him clear ____ to find the palace.',
+      'She fetched a jar of jam from the ____.',
+      'By midnight, the beautiful dress had completely ____.',
+      'She ran down the palace ____ as the clock struck twelve.',
+    ],
+  }
+};
+
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+let totalStars = parseInt(localStorage.getItem('bs_stars') || '0');
+let stats = JSON.parse(localStorage.getItem('bs_stats') || '{"quizzes":0,"math":0,"science":0,"spell":0,"total":0}');
+
+let quiz = { mode: '', topic: '', questions: [], idx: 0, score: 0 };
+
+let spelling = {
+  ws: null,
+  activity: null,
+  words: [],
+  idx: 0,
+  score: 0,
+  scrambleSelected: [],
+  scrambleAvailable: [],
+};
+
+const REWARDS = [
+  { icon: '🍟', name: 'Chips', threshold: 10 },
+  { icon: '🍦', name: 'Ice Cream', threshold: 25 },
+  { icon: '🍫', name: 'Chocolate', threshold: 50 },
+];
+
+let pinEntry = '';
+const PARENT_PIN = '7862';
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+function init() {
+  buildTopicGrid('math', MATH_TOPICS, 'mathTopicGrid');
+  buildTopicGrid('science', SCIENCE_TOPICS, 'scienceTopicGrid');
+  buildWorksheetPreviews();
+  updateStarsDisplay();
+}
+
+function buildTopicGrid(mode, topics, gridId) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = topics.map(t => `
+    <div class="topic-card ${mode}" onclick="startQuiz('${mode}','${t.id}')">
+      <div class="topic-icon">${t.icon}</div>
+      ${t.name}
+    </div>
+  `).join('');
+}
+
+function buildWorksheetPreviews() {
+  [2,3].forEach(n => {
+    const el = document.getElementById(`ws${n}preview`);
+    el.innerHTML = WORKSHEETS[n].words.slice(0,6).map(w => `<span class="word-badge">${w}</span>`).join('') + '<span class="word-badge">…</span>';
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════════════
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+//  QUIZ
+// ════════════════════════════════════════════════════════
+function startQuiz(mode, topicId) {
+  const topicList = mode === 'math' ? MATH_TOPICS : SCIENCE_TOPICS;
+  const qBank = mode === 'math' ? MATH_QUESTIONS : SCIENCE_QUESTIONS;
+  const topic = topicList.find(t => t.id === topicId);
+  const qs = qBank[topicId] || [];
+  if (!qs.length) return alert('Questions coming soon for this topic!');
+
+  quiz = { mode, topic, questions: shuffle([...qs]).slice(0, 5), idx: 0, score: 0 };
+
+  document.getElementById(`${mode}-topics-view`).style.display = 'none';
+  const quizView = document.getElementById(`${mode}-quiz-view`);
+  quizView.classList.add('active');
+  document.getElementById(`${mode}Results`).classList.remove('active');
+  document.getElementById(`${mode}QuizTitle`).textContent = `${topic.icon} ${topic.name}`;
+  renderQuestion(mode);
+}
+
+function renderQuestion(mode) {
+  const { questions, idx } = quiz;
+  const q = questions[idx];
+  const total = questions.length;
+
+  document.getElementById(`${mode}Progress`).textContent = `Question ${idx+1} of ${total}`;
+  document.getElementById(`${mode}ProgressFill`).style.width = `${(idx/total)*100}%`;
+  document.getElementById(`${mode}Question`).textContent = q.q;
+
+  const feedback = document.getElementById(`${mode}Feedback`);
+  feedback.classList.remove('show','correct','wrong');
+  document.getElementById(`${mode}NextBtn`).style.display = 'none';
+  document.getElementById(`${mode}ResultsBtn`).style.display = 'none';
+
+  const choicesEl = document.getElementById(`${mode}Choices`);
+  choicesEl.innerHTML = q.choices.map((c, i) => `
+    <button class="choice-btn" onclick="answerQ('${mode}', ${i})">${c}</button>
+  `).join('');
+}
+
+function answerQ(mode, chosen) {
+  const q = quiz.questions[quiz.idx];
+  const btns = document.querySelectorAll(`#${mode}Choices .choice-btn`);
+  btns.forEach(b => b.disabled = true);
+  btns[q.ans].classList.add('correct');
+
+  const feedback = document.getElementById(`${mode}Feedback`);
+  if (chosen === q.ans) {
+    quiz.score++;
+    btns[chosen].classList.add('correct');
+    feedback.innerHTML = '✅ Great job! That\'s correct!';
+    feedback.className = 'feedback-box show correct';
+    stats[mode]++;
+    stats.total++;
+  } else {
+    btns[chosen].classList.add('wrong');
+    feedback.innerHTML = `❌ Not quite. The answer is: <strong>${q.choices[q.ans]}</strong>`;
+    feedback.className = 'feedback-box show wrong';
+    stats.total++;
+  }
+  saveStats();
+
+  const isLast = quiz.idx === quiz.questions.length - 1;
+  document.getElementById(`${mode}NextBtn`).style.display = isLast ? 'none' : 'inline-flex';
+  document.getElementById(`${mode}ResultsBtn`).style.display = isLast ? 'inline-flex' : 'none';
+}
+
+function nextQuestion(mode) {
+  quiz.idx++;
+  renderQuestion(mode);
+}
+
+function showResults(mode) {
+  const { score, questions } = quiz;
+  const total = questions.length;
+  const pct = score / total;
+  const stars = pct >= 0.8 ? 3 : pct >= 0.6 ? 2 : 1;
+
+  document.getElementById(`${mode}Choices`).innerHTML = '';
+  document.getElementById(`${mode}Question`).textContent = '';
+  document.getElementById(`${mode}Feedback`).classList.remove('show');
+  document.getElementById(`${mode}NextBtn`).style.display = 'none';
+  document.getElementById(`${mode}ResultsBtn`).style.display = 'none';
+
+  const res = document.getElementById(`${mode}Results`);
+  res.classList.add('active');
+  document.getElementById(`${mode}Emoji`).textContent = pct >= 0.8 ? '🎉' : pct >= 0.6 ? '😊' : '💪';
+  document.getElementById(`${mode}Score`).textContent = `${score}/${total}`;
+  document.getElementById(`${mode}Msg`).textContent = pct >= 0.8 ? 'Amazing! You\'re a star!' : pct >= 0.6 ? 'Good work! Keep practising!' : 'Keep trying — you\'ve got this!';
+  document.getElementById(`${mode}Stars`).textContent = `⭐ +${stars} Stars Earned!`;
+
+  addStars(stars);
+  stats.quizzes++;
+  saveStats();
+  if (pct >= 0.8) confetti();
+}
+
+function showTopics(mode) {
+  document.getElementById(`${mode}-topics-view`).style.display = '';
+  document.getElementById(`${mode}-quiz-view`).classList.remove('active');
+  document.getElementById(`${mode}Results`).classList.remove('active');
+}
+
+function retryQuiz(mode) {
+  startQuiz(mode, quiz.topic.id);
+}
+
+// ════════════════════════════════════════════════════════
+//  SPELLING
+// ════════════════════════════════════════════════════════
+function selectWorksheet(n) {
+  spelling.ws = n;
+  document.getElementById('spell-ws-view').style.display = 'none';
+  document.getElementById('spell-activity-view').style.display = '';
+  document.getElementById('activityWsTitle').textContent = `📝 ${WORKSHEETS[n].name}`;
+}
+
+function backToWorksheets() {
+  document.getElementById('spell-ws-view').style.display = '';
+  document.getElementById('spell-activity-view').style.display = 'none';
+  document.getElementById('spell-game-view').style.display = 'none';
+}
+
+function backToActivities() {
+  document.getElementById('spell-activity-view').style.display = '';
+  document.getElementById('spell-game-view').style.display = 'none';
+}
+
+function startActivity(type) {
+  spelling.activity = type;
+  spelling.words = shuffle([...WORKSHEETS[spelling.ws].words]);
+  spelling.idx = 0;
+  spelling.score = 0;
+
+  document.getElementById('spell-activity-view').style.display = 'none';
+  document.getElementById('spell-game-view').style.display = '';
+
+  const actNames = { quiz:'✏️ Spelling Quiz', missing:'🔤 Missing Letters', scramble:'🔀 Word Scramble', sentence:'📜 Sentence Fill', test:'🏆 Full Test' };
+  document.getElementById('spellActivityTitle').textContent = actNames[type];
+  document.getElementById('spellResults').classList.remove('active');
+
+  ['quiz','missing','scramble','sentence','test'].forEach(a => {
+    document.getElementById('activity-'+a).style.display = a === type ? '' : 'none';
+  });
+
+  updateSpellProgress();
+
+  if (type === 'quiz') renderQuizWord();
+  else if (type === 'missing') renderMissingWord();
+  else if (type === 'scramble') renderScrambleWord();
+  else if (type === 'sentence') renderSentenceWord();
+  else if (type === 'test') renderTestWord();
+}
+
+function updateSpellProgress() {
+  const total = spelling.words.length;
+  const idx = spelling.idx;
+  document.getElementById('spellProgress').textContent = `Word ${idx+1} of ${total}`;
+  document.getElementById('spellProgressFill').style.width = `${(idx/total)*100}%`;
+}
+
+/* ── QUIZ ── */
+function renderQuizWord() {
+  const word = spelling.words[spelling.idx];
+  const ws = WORKSHEETS[spelling.ws];
+  const originalIdx = ws.words.indexOf(word);
+  document.getElementById('quizHint').textContent = '💡 ' + ws.hints[originalIdx];
+  document.getElementById('quizSyllables').textContent = word.split('').map((c,i) => i<3?'_':c).join('');
+  const inp = document.getElementById('quizInput');
+  inp.value = '';
+  inp.className = 'spell-input';
+  inp.disabled = false;
+  inp.focus();
+  document.getElementById('quizFeedback').classList.remove('show');
+  document.getElementById('quizNextBtn').style.display = 'none';
+  document.getElementById('quizResultsBtn').style.display = 'none';
+  updateSpellProgress();
+}
+
+function checkSpellingQuiz() {
+  const word = spelling.words[spelling.idx];
+  const inp = document.getElementById('quizInput');
+  const answer = inp.value.trim().toLowerCase();
+  const fb = document.getElementById('quizFeedback');
+  inp.disabled = true;
+  const correct = answer === word.toLowerCase();
+  if (correct) {
+    spelling.score++;
+    inp.classList.add('correct');
+    fb.innerHTML = '✅ Correct! Well done!';
+    fb.className = 'feedback-box show correct';
+  } else {
+    inp.classList.add('wrong');
+    fb.innerHTML = `❌ The correct spelling is: <strong>${word}</strong>`;
+    fb.className = 'feedback-box show wrong';
+  }
+  const isLast = spelling.idx === spelling.words.length - 1;
+  document.getElementById('quizNextBtn').style.display = isLast ? 'none' : 'inline-flex';
+  document.getElementById('quizResultsBtn').style.display = isLast ? 'inline-flex' : 'none';
+}
+
+function nextSpelling() { spelling.idx++; renderQuizWord(); }
+
+/* ── MISSING LETTERS ── */
+function renderMissingWord() {
+  const word = spelling.words[spelling.idx];
+  const display = makeMissing(word);
+  document.getElementById('missingDisplay').innerHTML = display;
+  const inp = document.getElementById('missingInput');
+  inp.value = '';
+  inp.className = 'spell-input';
+  inp.disabled = false;
+  inp.focus();
+  document.getElementById('missingFeedback').classList.remove('show');
+  document.getElementById('missingNextBtn').style.display = 'none';
+  document.getElementById('missingResultsBtn').style.display = 'none';
+  updateSpellProgress();
+}
+
+function makeMissing(word) {
+  // Hide roughly half the letters (non-first, non-last)
+  const arr = word.split('');
+  const toHide = new Set();
+  for (let i = 1; i < arr.length - 1; i++) {
+    if (Math.random() > 0.45) toHide.add(i);
+  }
+  return arr.map((c,i) => {
+    if (toHide.has(i)) return `<span class="blank">_</span>`;
+    return `<span style="color:var(--text)">${c}</span>`;
+  }).join('');
+}
+
+function checkMissing() {
+  const word = spelling.words[spelling.idx];
+  const inp = document.getElementById('missingInput');
+  const answer = inp.value.trim().toLowerCase();
+  const fb = document.getElementById('missingFeedback');
+  inp.disabled = true;
+  const correct = answer === word.toLowerCase();
+  if (correct) {
+    spelling.score++;
+    inp.classList.add('correct');
+    fb.innerHTML = '✅ Correct! Brilliant!';
+    fb.className = 'feedback-box show correct';
+  } else {
+    inp.classList.add('wrong');
+    fb.innerHTML = `❌ The word was: <strong>${word}</strong>`;
+    fb.className = 'feedback-box show wrong';
+  }
+  const isLast = spelling.idx === spelling.words.length - 1;
+  document.getElementById('missingNextBtn').style.display = isLast ? 'none' : 'inline-flex';
+  document.getElementById('missingResultsBtn').style.display = isLast ? 'inline-flex' : 'none';
+}
+
+function nextMissing() { spelling.idx++; renderMissingWord(); }
+
+/* ── SCRAMBLE ── */
+function renderScrambleWord() {
+  const word = spelling.words[spelling.idx];
+  const letters = shuffle(word.split(''));
+  spelling.scrambleAvailable = letters.map((l, i) => ({ l, i, used: false }));
+  spelling.scrambleSelected = [];
+  renderScrambleUI();
+  document.getElementById('scrambleFeedback').classList.remove('show');
+  document.getElementById('scrambleNextBtn').style.display = 'none';
+  document.getElementById('scrambleResultsBtn').style.display = 'none';
+  updateSpellProgress();
+}
+
+function renderScrambleUI() {
+  const lettersEl = document.getElementById('scrambleLetters');
+  lettersEl.innerHTML = spelling.scrambleAvailable.map((item, i) => `
+    <div class="letter-tile ${item.used ? 'used' : ''}" onclick="pickLetter(${i})">${item.l}</div>
+  `).join('');
+  const slotsEl = document.getElementById('answerSlots');
+  slotsEl.innerHTML = spelling.scrambleSelected.map((item, si) => `
+    <div class="answer-slot" onclick="unpickLetter(${si})">${item.l}</div>
+  `).join('');
+}
+
+function pickLetter(i) {
+  const item = spelling.scrambleAvailable[i];
+  if (item.used) return;
+  item.used = true;
+  spelling.scrambleSelected.push({ ...item, origIdx: i });
+  renderScrambleUI();
+}
+
+function unpickLetter(si) {
+  const item = spelling.scrambleSelected.splice(si, 1)[0];
+  spelling.scrambleAvailable[item.origIdx].used = false;
+  renderScrambleUI();
+}
+
+function clearScramble() {
+  spelling.scrambleAvailable.forEach(it => it.used = false);
+  spelling.scrambleSelected = [];
+  renderScrambleUI();
+}
+
+function checkScramble() {
+  const word = spelling.words[spelling.idx];
+  const answer = spelling.scrambleSelected.map(s => s.l).join('');
+  const fb = document.getElementById('scrambleFeedback');
+  const correct = answer.toLowerCase() === word.toLowerCase();
+  if (correct) {
+    spelling.score++;
+    fb.innerHTML = '✅ Correct! You unscrambled it!';
+    fb.className = 'feedback-box show correct';
+  } else {
+    fb.innerHTML = `❌ The correct word was: <strong>${word}</strong>`;
+    fb.className = 'feedback-box show wrong';
+  }
+  const isLast = spelling.idx === spelling.words.length - 1;
+  document.getElementById('scrambleNextBtn').style.display = isLast ? 'none' : 'inline-flex';
+  document.getElementById('scrambleResultsBtn').style.display = isLast ? 'inline-flex' : 'none';
+}
+
+function nextScramble() { spelling.idx++; renderScrambleWord(); }
+
+/* ── SENTENCE ── */
+function renderSentenceWord() {
+  const wordIdx = WORKSHEETS[spelling.ws].words.indexOf(spelling.words[spelling.idx]);
+  const ws = WORKSHEETS[spelling.ws];
+  const sentence = ws.sentences[wordIdx];
+  const word = ws.words[wordIdx];
+  
+  document.getElementById('sentenceDisplay').innerHTML = sentence.replace('____', `<span class="sentence-blank" id="sentenceAnswer">____</span>`);
+
+  // Word bank: correct + 3 distractors
+  const distractors = shuffle(ws.words.filter(w => w !== word)).slice(0,3);
+  const bank = shuffle([word, ...distractors]);
+  document.getElementById('wordBank').innerHTML = bank.map(w => `
+    <span class="word-chip" onclick="pickWordChip(this,'${w}','${word}')">${w}</span>
+  `).join('');
+
+  document.getElementById('sentenceFeedback').classList.remove('show');
+  document.getElementById('sentenceNextBtn').style.display = 'none';
+  document.getElementById('sentenceResultsBtn').style.display = 'none';
+  updateSpellProgress();
+}
+
+function pickWordChip(el, chosen, correct) {
+  document.querySelectorAll('.word-chip').forEach(c => c.classList.add('used-chip'));
+  const ansEl = document.getElementById('sentenceAnswer');
+  const fb = document.getElementById('sentenceFeedback');
+  ansEl.textContent = chosen;
+  if (chosen === correct) {
+    spelling.score++;
+    el.className = 'word-chip selected';
+    ansEl.style.color = 'var(--success)';
+    fb.innerHTML = '✅ Correct!';
+    fb.className = 'feedback-box show correct';
+  } else {
+    el.style.background = 'linear-gradient(135deg, var(--danger), #E53E3E)';
+    ansEl.style.color = 'var(--danger)';
+    fb.innerHTML = `❌ The correct word was: <strong>${correct}</strong>`;
+    fb.className = 'feedback-box show wrong';
+  }
+  const isLast = spelling.idx === spelling.words.length - 1;
+  document.getElementById('sentenceNextBtn').style.display = isLast ? 'none' : 'inline-flex';
+  document.getElementById('sentenceResultsBtn').style.display = isLast ? 'inline-flex' : 'none';
+}
+
+function nextSentence() { spelling.idx++; renderSentenceWord(); }
+
+/* ── TEST ── */
+function renderTestWord() {
+  const word = spelling.words[spelling.idx];
+  document.getElementById('testWordNum').textContent = `Word ${spelling.idx+1} of ${spelling.words.length}`;
+  document.getElementById('testWordDisplay').textContent = word;
+  const inp = document.getElementById('testInput');
+  inp.value = '';
+  inp.className = 'spell-input';
+  inp.disabled = false;
+  inp.focus();
+  document.getElementById('testFeedback').classList.remove('show');
+  document.getElementById('testNextBtn').style.display = 'none';
+  document.getElementById('testResultsBtn').style.display = 'none';
+  updateSpellProgress();
+  // Hide word after 2s
+  setTimeout(() => { document.getElementById('testWordDisplay').textContent = '???'; }, 2000);
+}
+
+function checkTest() {
+  const word = spelling.words[spelling.idx];
+  const inp = document.getElementById('testInput');
+  const answer = inp.value.trim().toLowerCase();
+  const fb = document.getElementById('testFeedback');
+  inp.disabled = true;
+  document.getElementById('testWordDisplay').textContent = word;
+  const correct = answer === word.toLowerCase();
+  if (correct) {
+    spelling.score++;
+    inp.classList.add('correct');
+    fb.innerHTML = '✅ Correct!';
+    fb.className = 'feedback-box show correct';
+  } else {
+    inp.classList.add('wrong');
+    fb.innerHTML = `❌ Correct spelling: <strong>${word}</strong>`;
+    fb.className = 'feedback-box show wrong';
+  }
+  const isLast = spelling.idx === spelling.words.length - 1;
+  document.getElementById('testNextBtn').style.display = isLast ? 'none' : 'inline-flex';
+  document.getElementById('testResultsBtn').style.display = isLast ? 'inline-flex' : 'none';
+}
+
+function nextTest() { spelling.idx++; renderTestWord(); }
+
+/* ── SPELL RESULTS ── */
+function showSpellResults() {
+  const { score, words } = spelling;
+  const total = words.length;
+  const pct = score / total;
+  const stars = pct >= 0.9 ? 5 : pct >= 0.8 ? 4 : pct >= 0.7 ? 3 : pct >= 0.5 ? 2 : 1;
+
+  ['quiz','missing','scramble','sentence','test'].forEach(a => {
+    document.getElementById('activity-'+a).style.display = 'none';
+  });
+  document.getElementById('spellResults').classList.add('active');
+  document.getElementById('spellEmoji').textContent = pct >= 0.8 ? '🌟' : pct >= 0.6 ? '😊' : '💪';
+  document.getElementById('spellScore').textContent = `${score}/${total}`;
+  document.getElementById('spellMsg').textContent = pct >= 0.9 ? 'Perfect! Spelling superstar!' : pct >= 0.7 ? 'Great work! Almost perfect!' : pct >= 0.5 ? 'Good effort! Keep practising!' : 'Don\'t give up! Practise makes perfect!';
+  document.getElementById('spellStars').textContent = `⭐ +${stars} Stars Earned!`;
+
+  addStars(stars);
+  stats.quizzes++;
+  stats.spell += score;
+  stats.total += total;
+  saveStats();
+  if (pct >= 0.8) confetti();
+
+  // Missed words
+  const missedEl = document.getElementById('missedWords');
+  if (pct < 1) {
+    missedEl.innerHTML = '';
+  }
+}
+
+function retrySpelling() {
+  startActivity(spelling.activity);
+}
+
+// ════════════════════════════════════════════════════════
+//  REWARDS
+// ════════════════════════════════════════════════════════
+function addStars(n) {
+  totalStars += n;
+  localStorage.setItem('bs_stars', totalStars);
+  updateStarsDisplay();
+  checkRewardUnlock(totalStars - n, totalStars);
+}
+
+function updateStarsDisplay() {
+  document.getElementById('starsDisplay').textContent = totalStars;
+}
+
+function checkRewardUnlock(prev, curr) {
+  REWARDS.forEach(r => {
+    if (prev < r.threshold && curr >= r.threshold) {
+      setTimeout(() => showUnlockModal(r), 500);
+    }
+  });
+}
+
+function showUnlockModal(reward) {
+  alert(`🎉 You unlocked: ${reward.icon} ${reward.name}! Amazing work!`);
+}
+
+function openRewards() {
+  const itemsEl = document.getElementById('rewardItems');
+  itemsEl.innerHTML = REWARDS.map(r => {
+    const earned = totalStars >= r.threshold;
+    const isNext = !earned && REWARDS.filter(x => totalStars >= x.threshold).length === REWARDS.indexOf(r);
+    const cls = earned ? 'earned' : isNext ? 'next' : 'locked';
+    return `
+      <div class="reward-item ${cls}">
+        <div class="r-icon">${r.icon}</div>
+        <div class="r-name">${r.name}</div>
+        <div class="r-stars">⭐ ${r.threshold} stars</div>
+        ${earned ? '<div style="color:var(--success);font-weight:800;font-size:0.8rem;">✓ UNLOCKED!</div>' : ''}
+      </div>
+    `;
+  }).join('');
+  document.getElementById('rewardModal').classList.add('show');
+}
+
+// ════════════════════════════════════════════════════════
+//  PARENT ZONE
+// ════════════════════════════════════════════════════════
+function openParent() {
+  resetPin();
+  document.getElementById('parentModal').classList.add('show');
+}
+
+function pinPress(n) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += n;
+  for (let i = 1; i <= 4; i++) {
+    const d = document.getElementById('d'+i);
+    d.classList.toggle('filled', i <= pinEntry.length);
+  }
+  if (pinEntry.length === 4) {
+    setTimeout(() => {
+      if (pinEntry === PARENT_PIN) {
+        document.getElementById('pin-screen').style.display = 'none';
+        document.getElementById('parent-dashboard').style.display = '';
+        updateParentStats();
+        document.getElementById('pinError').style.display = 'none';
+      } else {
+        document.getElementById('pinError').style.display = 'block';
+        pinEntry = '';
+        for (let i = 1; i <= 4; i++) document.getElementById('d'+i).classList.remove('filled');
+      }
+    }, 300);
+  }
+}
+
+function pinClear() {
+  pinEntry = pinEntry.slice(0,-1);
+  for (let i = 1; i <= 4; i++) document.getElementById('d'+i).classList.toggle('filled', i <= pinEntry.length);
+}
+
+function resetPin() {
+  pinEntry = '';
+  for (let i = 1; i <= 4; i++) document.getElementById('d'+i).classList.remove('filled');
+  document.getElementById('pin-screen').style.display = '';
+  document.getElementById('parent-dashboard').style.display = 'none';
+  document.getElementById('pinError').style.display = 'none';
+}
+
+function updateParentStats() {
+  document.getElementById('statStars').textContent = totalStars;
+  document.getElementById('statQuizzes').textContent = stats.quizzes;
+  document.getElementById('statMath').textContent = stats.math;
+  document.getElementById('statScience').textContent = stats.science;
+  document.getElementById('statSpell').textContent = stats.spell;
+  const acc = stats.total > 0 ? Math.round(((stats.math + stats.science + stats.spell) / stats.total) * 100) : 0;
+  document.getElementById('statAcc').textContent = acc + '%';
+}
+
+function resetProgress() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    totalStars = 0;
+    stats = { quizzes:0, math:0, science:0, spell:0, total:0 };
+    localStorage.setItem('bs_stars', 0);
+    saveStats();
+    updateStarsDisplay();
+    updateParentStats();
+  }
+}
+
+function saveStats() {
+  localStorage.setItem('bs_stats', JSON.stringify(stats));
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// ════════════════════════════════════════════════════════
+//  CONFETTI
+// ════════════════════════════════════════════════════════
+function confetti() {
+  const container = document.getElementById('confettiContainer');
+  container.innerHTML = '';
+  const colors = ['#FF6B6B','#FFD93D','#4ECDC4','#A855F7','#FF6B9D','#45B7D1'];
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText = `
+      left: ${Math.random()*100}%;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${6+Math.random()*10}px;
+      height: ${6+Math.random()*10}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${1.5 + Math.random()*2}s;
+      animation-delay: ${Math.random()*0.5}s;
+    `;
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.innerHTML = '', 4000);
+}
+
+// ════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ════════════════════════════════════════════════════════
+//  START
+// ════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
